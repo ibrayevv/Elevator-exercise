@@ -1,22 +1,23 @@
-/**
- * Function to Find Near Elevator from array
- * @param value 
- * @param array 
- * @returns index
- */
-const findNearestFloorIndex = (value: number, array: number[]) => {
-  let nearestIndex = 0;
-  let nearestDifference = Math.abs(array[0] - value);
+const findNearestFloorIndex = (
+  floor: number,
+  array: {aim: number, index: number,start:number }[],
+) => {
+  let nearestIndex = -1;
+  let nearestDifference = Infinity;
 
-  for (let i = 1; i < array.length; i++) {
-    const difference = Math.abs(array[i] - value);
-    if (difference < nearestDifference) {
-      nearestIndex = i;
-      nearestDifference = difference;
+  for (let i = array.length -1 ; i >= 0; i--) {
+    if (array[i].start === floor) return array[i].index;
+    if (array[i].start === array[i].aim) {
+      const difference = Math.abs(array[i].start - floor);
+
+      if (difference < nearestDifference) {
+        nearestIndex = i;
+        nearestDifference = difference;
+      }
     }
   }
 
-  return nearestIndex;
+  return nearestIndex;                   
 };
 
 export default findNearestFloorIndex;

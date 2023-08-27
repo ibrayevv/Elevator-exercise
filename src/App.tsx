@@ -1,16 +1,24 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ElevatorButtons from "./components/shared/Buttons";
 import Building from "./components/shared/Building";
 import { Layout } from "./components/UI/Layout";
 import { useForm } from "react-hook-form";
 import InputForm from "./components/shared/InputForm";
 import { Earth } from "./components/UI/Earth";
+import findNearestFloorIndex from "./helpers/findNearestFloorIndex";
 
 interface FormData {
   lifts: number;
   floors: number;
-  currentFloors?: number[];
+  busies?: boolean[];
+  oldFloors?: number[];
+}
+
+interface IElevatorInfo {
+  index: number,
+  aim: number,
+  start: number,
 }
 
 const App: React.FC = () => {
@@ -29,6 +37,11 @@ const App: React.FC = () => {
 
   const floors = getValues("floors") || 8;
   const evelators = getValues("lifts") || 1;
+  const [elevatorsInfo, setElevatorsInfo] = useState<IElevatorInfo[]>([{
+    index: 0,
+    aim: 0,
+    start: 0,
+  }]);
 
   const onFloorRequest = useCallback(
     (floor: number) => {
@@ -64,10 +77,27 @@ const App: React.FC = () => {
   const handleFormSubmit = (data: FormData) => {
     setValue("lifts", data.lifts);
     setValue("floors", data.floors);
-    const currentFloors = Array.from({ length: data.lifts }, () => 0);
-    setValue("currentFloors", currentFloors);
+    const currentFloors = Array.from({ length: data.lifts }, (_, index) => ({
+      aim: 0,
+      index: index,
+      start: 0,
+    }));
+    setElevatorsInfo(currentFloors);
     setCurrentFloor(0);
   };
+
+  useEffect(() => {
+    const updatedCurrentFloors = [...elevatorsInfo];
+    const allLiftsBusy = elevatorsInfo.every(lift => lift.aim !== lift.start);
+    if (allLiftsBusy) return;
+
+    const index = findNearestFloorIndex(currentFloor, elevatorsInfo);
+    updatedCurrentFloors[index].aim = currentFloor;
+
+    setElevatorsInfo(updatedCurrentFloors);
+  }, [currentFloor, getValues, setValue])
+
+  const handleChangeInfo = (info: IElevatorInfo[]) =>setElevatorsInfo(info);
 
   return (
     <>
@@ -81,13 +111,13 @@ const App: React.FC = () => {
         <Building
           floors={floors}
           elevators={evelators}
-          currentFloors={getValues("currentFloors") || []}
-          currentFloor={currentFloor}
+          setElevatorInfo={handleChangeInfo}
+          currentFloors={elevatorsInfo}
         />
       </Layout>
       <Earth />
     </>
   );
-};
+  };
 
-export default App;
+  export default App;

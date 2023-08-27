@@ -1,24 +1,27 @@
-import { render } from "@testing-library/react";
-import { screen } from "@testing-library/dom";
-import Building from "./Building";
-import "@testing-library/jest-dom/extend-expect";
+import { render } from '@testing-library/react';
+import Building from './Building';
 
-test("renders correct number of floors and elevators", () => {
-    const currentFloors = [0, 1, 2];
-    const currentFloor = 1;
-    const floors = 5;
-    const elevators = 3;
+describe('Building Component', () => {
+  const currentFloors = [
+    { aim: 2, index: 0, start: 0 },
+    { aim: 4, index: 1, start: 0 },
+  ];
+  const floors = 5;
+  const elevators = 2;
 
-    render(
-        <Building
-            currentFloors={currentFloors}
-            currentFloor={currentFloor}
-            floors={floors}
-            elevators={elevators}
-        />
+  it('renders building floors and elevators', () => {
+    const setElevatorInfoMock = jest.fn();
+    const { getByTestId } = render(
+      <Building
+        currentFloors={currentFloors}
+        floors={floors}
+        elevators={elevators}
+        setElevatorInfo={setElevatorInfoMock}
+      />
     );
 
-    const building = screen.getAllByTestId("building");
+    const buildingElement = getByTestId('building');
 
-    expect(building).toHaveLength(1);
+    expect(buildingElement).toHaveLength(1);
+  });
 });

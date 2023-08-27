@@ -1,29 +1,66 @@
-import { render } from "@testing-library/react";
-import Elevator from "./Elevator";
-import "@testing-library/jest-dom/extend-expect";
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import Elevator from './Elevator';
 
-test("renders Elevator with correct position", () => {
-    const position = 100;
-    const number = 1;
+describe('Elevator component', () => {
+  const mockSetElevatorInfo = jest.fn();
+  const mockCurrentFloors = [
+    { aim: 5, index: 0, start: 3 },
+    { aim: 7, index: 1, start: 5 },
+    { aim: 3, index: 2, start: 7 },
+  ];
 
-    const { getByTestId } = render(
-        <Elevator position={position} number={number} />
+  it('should render with the correct initial floor', () => {
+    render(
+      <Elevator
+        position={0}
+        number={0}
+        distance={2}
+        aim={5}
+        currentFloors={mockCurrentFloors}
+        setElevatorInfo={mockSetElevatorInfo}
+      />
     );
 
-    const elevator = getByTestId("elevator");
-    expect(elevator).toBeInTheDocument();
-    // expect(elevator).toHaveStyle(`transform: translateY(-${position}px)`);
-});
+    const elevatorCage = screen.getByTestId('elevator-cage');
+    expect(elevatorCage.textContent).toBe('1');
+  });
 
-test("renders Elevator with correct cage number", () => {
-    const position = 0;
-    const number = 0;
-
-    const { getByTestId } = render(
-        <Elevator position={position} number={number} />
+  it('should update the floor when the aim floor changes', () => {
+    render(
+      <Elevator
+        position={0}
+        number={0}
+        distance={2}
+        aim={7}
+        currentFloors={mockCurrentFloors}
+        setElevatorInfo={mockSetElevatorInfo}
+      />
     );
 
-    const elevatorCage = getByTestId("elevator-cage");
-    expect(elevatorCage).toBeInTheDocument();
-    // expect(elevatorCage).toHaveStyle(`margin-left: ${number * 2.5}rem`);
+    const elevatorCage = screen.getByTestId('elevator-cage');
+    expect(elevatorCage.textContent).toBe('1');
+
+    userEvent.click(screen.getByText('7'));
+    expect(elevatorCage.textContent).toBe('2');
+  });
+
+  it('should stop updating the floor when the aim floor is reached', () => {
+    render(
+      <Elevator
+        position={0}
+        number={0}
+        distance={2}
+        aim={3}
+        currentFloors={mockCurrentFloors}
+        setElevatorInfo={mockSetElevatorInfo}
+      />
+    );
+
+    const elevatorCage = screen.getByTestId('elevator-cage');
+    expect(elevatorCage.textContent).toBe('1');
+
+    jest.advanceTimersByTime(3000); // Advance time by 3 seconds
+    expect(elevatorCage.textContent).toBe('3');
+  });
 });
